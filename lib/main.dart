@@ -284,15 +284,15 @@ class MyCustomFormState extends State<MyCustomForm> {
 //              onPressed: () {},
 //              child: Text("LogIn"),
 //            ),
-//            new Center(
-//              //margin: const EdgeInsets.only(top: 10.0, left: 40),
-//
-//                child: new RaisedButton(
-//                  onPressed: null,
-//                  child: new Text('Login'),
-//                ),
-//
-//            ),
+            new Center(
+              //margin: const EdgeInsets.only(top: 10.0, left: 40),
+
+                child: new RaisedButton(
+                  onPressed: null,
+                  child: new Text('Login'),
+                ),
+
+            ),
 //
 //            new Padding(
 //              padding: EdgeInsets.symmetric(vertical: 16.0),
