@@ -138,7 +138,7 @@ class MyCustomFormState extends State<MyCustomForm> {
             new Center(
               //margin: const EdgeInsets.only(left: 40),
               child: new Text(
-                'Welcome To Subrata ',
+                'Welcome ',
                 textAlign: TextAlign.center,
                 style: new TextStyle(color: Colors.deepOrange, fontSize: 25.0),
               ),
