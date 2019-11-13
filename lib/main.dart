@@ -88,7 +88,9 @@ class MyHomePage extends StatelessWidget {
         title: Text(title),
       ),
       body: SingleChildScrollView(
-        child: MyCustomForm(),
+        child: MyCustomForm(
+
+        ),
       ),
       // body: MyCustomForm(),
 //      floatingActionButton: Theme(
@@ -136,7 +138,7 @@ class MyCustomFormState extends State<MyCustomForm> {
             new Center(
               //margin: const EdgeInsets.only(left: 40),
               child: new Text(
-                'Welcome To Flutter ',
+                'Welcome To Subrata ',
                 textAlign: TextAlign.center,
                 style: new TextStyle(color: Colors.deepOrange, fontSize: 25.0),
               ),
