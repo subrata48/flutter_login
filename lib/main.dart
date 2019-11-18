@@ -1,10 +1,19 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app123/Helper/Validator.dart';
 import 'package:toast/toast.dart';
 import 'package:flutter_app123/SignUpPage.dart';
 
+import 'package:flutter_app123/auth.dart';
+import 'package:flutter_app123/Data/database_helper.dart';
+import 'package:flutter_app123/Models/user.dart';
+import 'package:flutter_app123/login_screen_presenter.dart';
+import 'package:flutter_app123/Utils/network_util.dart';
+
 void main() => runApp(MyApp());
+final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
 class MyApp extends StatelessWidget {
   @override
@@ -88,9 +97,7 @@ class MyHomePage extends StatelessWidget {
         title: Text(title),
       ),
       body: SingleChildScrollView(
-        child: MyCustomForm(
-
-        ),
+        child: MyCustomForm(),
       ),
       // body: MyCustomForm(),
 //      floatingActionButton: Theme(
@@ -116,12 +123,31 @@ class MyCustomForm extends StatefulWidget {
   }
 }
 
-class MyCustomFormState extends State<MyCustomForm> {
+class MyCustomFormState extends State<MyCustomForm>
+    implements LoginScreenContract, AuthStateListener {
+  BuildContext _ctx;
   final _formKey = GlobalKey<FormState>();
+  final scaffoldKey = new GlobalKey<ScaffoldState>();
   bool _validate = false;
   LoginRequestData _loginData = LoginRequestData();
   bool _obscureText = true;
   bool _autoValidate = false;
+  bool _isLoading = false;
+
+  LoginScreenPresenter _presenter;
+  NetworkUtil _netUtil = new NetworkUtil();
+
+  MyCustomFormState() {
+    _presenter = new LoginScreenPresenter(this);
+    var authStateProvider = new AuthStateProvider();
+    authStateProvider.subscribe(this);
+  }
+
+  @override
+  onAuthStateChanged(AuthState state) {
+    if (state == AuthState.LOGGED_IN)
+      Navigator.of(context).pushReplacementNamed("/home");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,49 +217,62 @@ class MyCustomFormState extends State<MyCustomForm> {
 //                return null;
 //              },
 
-              validator: validateEmail,
-              onSaved: (String value) {
-                _loginData.email = value;
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter some text';
+                } else {
+                  _loginData.email = value;
+                }
+                return null;
               },
+
+//              validator: validateEmail,
+//              onSaved: (String value) {
+//                _loginData.email = value;
+//              },
             ),
             new SizedBox(height: 20.0),
 
             new TextFormField(
-                //obscureText: true,
-                obscureText: _obscureText,
-                //keyboardType: TextInputType.emailAddress,
-                autofocus: false,
-                decoration: InputDecoration(
-                  labelText: 'Enter Password',
-                  //hintText: ' Password',
-                  contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                  border: OutlineInputBorder(
-                    borderSide:
-                        const BorderSide(color: Colors.grey, width: 0.0),
-                  ),
-
-                  suffixIcon: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
-                    child: Icon(
-                      _obscureText ? Icons.visibility : Icons.visibility_off,
-                      semanticLabel:
-                          _obscureText ? 'show password' : 'hide password',
-                    ),
-                  ),
+              //obscureText: true,
+              obscureText: _obscureText,
+              //keyboardType: TextInputType.emailAddress,
+              autofocus: false,
+              decoration: InputDecoration(
+                labelText: 'Enter Password',
+                //hintText: ' Password',
+                contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                border: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 0.0),
                 ),
 
-                // keyboardType: TextInputType.text,
-                // obscureText: true
-                // maxLength: 10,
+                suffixIcon: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                  child: Icon(
+                    _obscureText ? Icons.visibility : Icons.visibility_off,
+                    semanticLabel:
+                        _obscureText ? 'show password' : 'hide password',
+                  ),
+                ),
+              ),
 
-                validator: validatePassword,
-                onSaved: (String value) {
+              // keyboardType: TextInputType.text,
+              // obscureText: true
+              // maxLength: 10,
+
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter some text';
+                } else {
                   _loginData.password = value;
-                }),
+                }
+                return null;
+              },
+            ),
 
             new SizedBox(height: 25.0),
 
@@ -241,7 +280,8 @@ class MyCustomFormState extends State<MyCustomForm> {
               minWidth: 16.0,
               height: 35.0,
               child: RaisedButton(
-                onPressed: _validateInputs,
+                onPressed: _validateInputslogin,
+
                 //child: new Text('Validate'),
                 //onPressed: () => print("submit"),
 
@@ -286,15 +326,15 @@ class MyCustomFormState extends State<MyCustomForm> {
 //              onPressed: () {},
 //              child: Text("LogIn"),
 //            ),
-            new Center(
-              //margin: const EdgeInsets.only(top: 10.0, left: 40),
-
-                child: new RaisedButton(
-                  onPressed: null,
-                  child: new Text('Login'),
-                ),
-
-            ),
+//            new Center(
+//              //margin: const EdgeInsets.only(top: 10.0, left: 40),
+//
+//                child: new RaisedButton(
+//                  onPressed: null,
+//                  child: new Text('Login'),
+//                ),
+//
+//            ),
 //
 //            new Padding(
 //              padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -342,10 +382,43 @@ class MyCustomFormState extends State<MyCustomForm> {
 //    },
 //    child: Text('Submit'),
 //    ),
+
+            // CircularProgressIndicator(),
+
+            //  _isLoading ? new CircularProgressIndicator() : new Container(),
           ],
         ),
       ),
     );
+  }
+
+  //dialog
+  static Future<void> showLoadingDialog(
+      BuildContext context, GlobalKey key) async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return new WillPopScope(
+              onWillPop: () async => false,
+              child: SimpleDialog(
+                  key: key,
+                  backgroundColor: Colors.black54,
+                  children: <Widget>[
+                    Center(
+                      child: Column(children: [
+                        CircularProgressIndicator(),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          "Please Wait....",
+                          style: TextStyle(color: Colors.blueAccent),
+                        )
+                      ]),
+                    )
+                  ]));
+        });
   }
 
   void GetRegister() {
@@ -355,22 +428,67 @@ class MyCustomFormState extends State<MyCustomForm> {
     );
   }
 
-  void _validateInputs() {
+  void _validateInputslogin() {
     if (_formKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
+      setState(() => _isLoading = true);
+      //CircularProgressIndicator();
+      showLoadingDialog(context, _keyLoader);
+
       _formKey.currentState.save();
-      print("Validate");
-      Toast.show("Validate Succsses", context,
-          backgroundColor: Colors.deepOrange,
-          textColor: Colors.white,
-          duration: Toast.LENGTH_LONG,
-          gravity: Toast.BOTTOM);
+      //     print("Validate");
+//      Toast.show("Validate Succsses", context,
+//          backgroundColor: Colors.deepOrange,
+//          textColor: Colors.white,
+//          duration: Toast.LENGTH_LONG,
+//          gravity: Toast.BOTTOM);
+      print("username" + _loginData.email);
+      print("username" + _loginData.password);
+      _presenter.doLogin(_loginData.email, _loginData.password);
+
+      Navigator.pop(context);
     } else {
 //    If all data are not valid then start auto validation.
       setState(() {
         _autoValidate = true;
+        _isLoading = false;
+        Navigator.pop(context);
       });
     }
+  }
+
+  void _showSnackBar(String text) {
+    scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text(text)));
+  }
+
+  @override
+  void onLoginError(String msg) {
+    // TODO: implement onLoginError
+    Navigator.pop(context);
+    Toast.show(msg, context,
+        backgroundColor: Colors.deepOrange,
+        textColor: Colors.white,
+        duration: Toast.LENGTH_LONG,
+        gravity: Toast.BOTTOM);
+    setState(() => _isLoading = false);
+  }
+
+  @override
+  Future onLoginSuccess(String msg) async {
+    // TODO: implement onLoginSuccess
+    Navigator.pop(context);
+    print("snackbarmsg"+msg);
+   // _showSnackBar(user);
+          Toast.show(msg, context,
+          backgroundColor: Colors.deepOrange,
+          textColor: Colors.white,
+          duration: Toast.LENGTH_LONG,
+          gravity: Toast.BOTTOM);
+    setState(() => _isLoading = false);
+//    var db = new DatabaseHelper();
+//    await db.saveUser(user);
+     var authStateProvider = new AuthStateProvider();
+     authStateProvider.notify(AuthState.LOGGED_IN);
   }
 }
 
@@ -385,10 +503,10 @@ String validatePassword(String value) {
   RegExp regex = new RegExp(pattern);
   print(value);
   if (value.isEmpty) {
-    return 'Please enter password';
+    return 'Password is Required';
   } else {
     if (!regex.hasMatch(value))
-      return 'Enter valid password';
+      return 'EInvalid password';
     else
       return null;
   }
