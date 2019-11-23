@@ -1,20 +1,20 @@
 class User {
-  String mobile;
-  String _password;
-  String latitude;
-  String longitude;
+//  String mobile;
+//  String password;
+//  String latitude;
+//  String longitude;
 
-  String status;
+  int status;
   String msg;
 
 
-  User(this.mobile, this.latitude,this.longitude,this._password);
+  User({this.status, this.msg});
 
-  User.map(dynamic obj) {
-    this.mobile = obj["mobile"];
-    this.latitude = obj["latitude"];
-    this.longitude = obj["longitude"];
-    this._password = obj["password"];
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      status: json['status'] as int,
+      msg: json['msg'] as String,
+    );
   }
 
 //  User.map(dynamic obj) {
@@ -22,17 +22,12 @@ class User {
 //    this.msg = obj["msg"];
 //  }
 
-  String get mobileda => mobile;
-  String get password => _password;
-  String get lat => latitude;
-  String get long => longitude;
+
 
   Map<String, dynamic> toMap() {
     var map = new Map<String, dynamic>();
-    map["mobile"] = mobile;
-    map["latitude"] = latitude;
-    map["longitude"] = longitude;
-    map["password"] = _password;
+    map["status"] = status;
+    map["msg"] = msg;
     return map;
   }
 }

@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
             title: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
             body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
           )),
+
       debugShowCheckedModeBanner: false,
 
       home: MyHomePage(
@@ -184,8 +185,9 @@ class MyCustomFormState extends State<MyCustomForm>
             //     new Padding(padding: EdgeInsets.only(top: 50.0)),
             TextFormField(
               //obscureText: _obscureText,
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: TextInputType.number,
               autofocus: false,
+              maxLength: 10,
 
               decoration: InputDecoration(
                 labelText: 'Enter your mobile number',
@@ -458,8 +460,11 @@ class MyCustomFormState extends State<MyCustomForm>
   }
 
   @override
-  void onLoginError(String msg) {
+  void onLoginError(String msg, String jsondata) {
     // TODO: implement onLoginError
+    var db = new DatabaseHelper();
+    db.deleteUsers();
+
     Navigator.pop(context);
     Toast.show(msg, context,
         backgroundColor: Colors.deepOrange,
@@ -470,10 +475,12 @@ class MyCustomFormState extends State<MyCustomForm>
   }
 
   @override
-  Future onLoginSuccess(String msg) async {
+  Future onLoginSuccess(String msg, String jsondata) async {
     // TODO: implement onLoginSuccess
     Navigator.pop(context);
     print("snackbarmsg" + msg);
+    var parsedJson = json.decode(jsondata);
+    User model = User.fromJson(parsedJson);
     // _showSnackBar(user);
     Toast.show(msg, context,
         backgroundColor: Colors.deepOrange,
@@ -481,8 +488,8 @@ class MyCustomFormState extends State<MyCustomForm>
         duration: Toast.LENGTH_LONG,
         gravity: Toast.BOTTOM);
     setState(() => _isLoading = false);
-//    var db = new DatabaseHelper();
-//    await db.saveUser(user);
+    var db = new DatabaseHelper();
+    await db.saveUser(model);
     var authStateProvider = new AuthStateProvider();
     authStateProvider.notify(AuthState.LOGGED_IN);
   }
@@ -533,3 +540,16 @@ String validateEmail(String value) {
     return null;
   }
 }
+
+
+
+
+
+
+//login check fromsqlte db name dow.db
+//
+//var db = new DatabaseHelper();
+//Future<bool> value =db.isLoggedIn();
+//if(value == true){
+//getHomewidget();
+//}
