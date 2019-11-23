@@ -19,6 +19,7 @@ class LoginScreenPresenter {
     api.login(username, password).then((String jsondata) {
       var parsedJson = json.decode(jsondata);
       var status = parsedJson['status'];
+
       var msg = parsedJson['msg'];
       if (status == 0) {
         _view.onLoginError(msg);

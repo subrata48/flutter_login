@@ -188,7 +188,7 @@ class MyCustomFormState extends State<MyCustomForm>
               autofocus: false,
 
               decoration: InputDecoration(
-                labelText: 'Enter your Email',
+                labelText: 'Enter your mobile number',
 
                 //hintText: ' Email',
                 contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -217,19 +217,19 @@ class MyCustomFormState extends State<MyCustomForm>
 //                return null;
 //              },
 
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter some text';
-                } else {
-                  _loginData.email = value;
-                }
-                return null;
-              },
-
-//              validator: validateEmail,
-//              onSaved: (String value) {
-//                _loginData.email = value;
+//              validator: (value) {
+//                if (value.isEmpty) {
+//                  return 'Please enter some text';
+//                } else {
+//                  _loginData.email = value;
+//                }
+//                return null;
 //              },
+
+              validator: phoneNumberValidator,
+              onSaved: (String value) {
+                _loginData.email = value;
+              },
             ),
             new SizedBox(height: 20.0),
 
@@ -253,7 +253,7 @@ class MyCustomFormState extends State<MyCustomForm>
                     });
                   },
                   child: Icon(
-                    _obscureText ? Icons.visibility : Icons.visibility_off,
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
                     semanticLabel:
                         _obscureText ? 'show password' : 'hide password',
                   ),
@@ -264,13 +264,9 @@ class MyCustomFormState extends State<MyCustomForm>
               // obscureText: true
               // maxLength: 10,
 
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter some text';
-                } else {
-                  _loginData.password = value;
-                }
-                return null;
+              validator: validatePassword,
+              onSaved: (String value) {
+                _loginData.password = value;
               },
             ),
 
@@ -431,34 +427,34 @@ class MyCustomFormState extends State<MyCustomForm>
   void _validateInputslogin() {
     if (_formKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
-      setState(() => _isLoading = true);
+      //setState(() => _isLoading = true);
       //CircularProgressIndicator();
-      showLoadingDialog(context, _keyLoader);
-
       _formKey.currentState.save();
+      showLoadingDialog(context, _keyLoader);
       //     print("Validate");
-//      Toast.show("Validate Succsses", context,
-//          backgroundColor: Colors.deepOrange,
-//          textColor: Colors.white,
-//          duration: Toast.LENGTH_LONG,
-//          gravity: Toast.BOTTOM);
+      Toast.show("Validate Succsses", context,
+          backgroundColor: Colors.deepOrange,
+          textColor: Colors.white,
+          duration: Toast.LENGTH_LONG,
+          gravity: Toast.BOTTOM);
       print("username" + _loginData.email);
       print("username" + _loginData.password);
       _presenter.doLogin(_loginData.email, _loginData.password);
 
-      Navigator.pop(context);
+      // Navigator.pop(context);
     } else {
 //    If all data are not valid then start auto validation.
       setState(() {
         _autoValidate = true;
         _isLoading = false;
-        Navigator.pop(context);
+        // Navigator.pop(context);
       });
     }
   }
 
   void _showSnackBar(String text) {
-    scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text(text)));
+    scaffoldKey.currentState
+        .showSnackBar(new SnackBar(content: new Text(text)));
   }
 
   @override
@@ -477,18 +473,18 @@ class MyCustomFormState extends State<MyCustomForm>
   Future onLoginSuccess(String msg) async {
     // TODO: implement onLoginSuccess
     Navigator.pop(context);
-    print("snackbarmsg"+msg);
-   // _showSnackBar(user);
-          Toast.show(msg, context,
-          backgroundColor: Colors.deepOrange,
-          textColor: Colors.white,
-          duration: Toast.LENGTH_LONG,
-          gravity: Toast.BOTTOM);
+    print("snackbarmsg" + msg);
+    // _showSnackBar(user);
+    Toast.show(msg, context,
+        backgroundColor: Colors.deepOrange,
+        textColor: Colors.white,
+        duration: Toast.LENGTH_LONG,
+        gravity: Toast.BOTTOM);
     setState(() => _isLoading = false);
 //    var db = new DatabaseHelper();
 //    await db.saveUser(user);
-     var authStateProvider = new AuthStateProvider();
-     authStateProvider.notify(AuthState.LOGGED_IN);
+    var authStateProvider = new AuthStateProvider();
+    authStateProvider.notify(AuthState.LOGGED_IN);
   }
 }
 
@@ -497,9 +493,22 @@ class LoginRequestData {
   String password = '';
 }
 
+String phoneNumberValidator(String value) {
+  Pattern pattern = r'^(?:[+0]9)?[0-9]{10}$';
+  RegExp regex = new RegExp(pattern);
+  if (value.isEmpty) {
+    return 'phone number is Required';
+  } else {
+    if (!regex.hasMatch(value))
+      return 'Enter Valid Phone Number';
+    else
+      return null;
+  }
+}
+
 String validatePassword(String value) {
-  Pattern pattern =
-      r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
+  //Pattern pattern = r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
+  Pattern pattern = r'[0-9]';
   RegExp regex = new RegExp(pattern);
   print(value);
   if (value.isEmpty) {

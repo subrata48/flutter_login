@@ -121,13 +121,8 @@ class Signupformstate extends State<Signupform> {
             child: RaisedButton(
               //onPressed: null,
               //child: new Text('Validate'),
-              onPressed: () async {
-                Post newPost = new Post(
-                    userId: "15467890", id: 0, title: titleControler.text, body: bodyControler.text);
-                Post p = await createPost(CREATE_POST_URL,
-                    body: newPost.toMap());
-                print(p.title);
-              },
+              onPressed:getregister,
+
 
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
